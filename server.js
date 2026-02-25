@@ -24,7 +24,7 @@ function buildPrompt(description, factsText) {
   lines.push(factsText);
   lines.push("");
   lines.push("The fraud analyst describes what they want to detect:");
-  lines.push("\"" + description + "\"");
+  lines.push('"' + description + '"');
   lines.push("");
   lines.push("Respond ONLY with valid JSON (no markdown, no backticks, no explanation outside the JSON). Use this structure: { analysis (string), fraud_type (string), risk_level (HIGH or MEDIUM or LOW), recommended_facts (array of objects with name, relevance, priority), rule_options (array of objects with name, description, action, aggressiveness, conditions_text, notes), considerations (array of strings), related_fraud_types (array of strings) }");
   return lines.join("\n");
@@ -63,7 +63,7 @@ app.get("/api/health", function(req, res) {
 
 app.use(express.static(path.join(__dirname, "dist")));
 
-app.get("*", function(req, res) {
+app.use(function(req, res) {
   res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
