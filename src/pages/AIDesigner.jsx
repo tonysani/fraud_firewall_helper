@@ -1,11 +1,11 @@
-﻿import { useState } from "react";
+import { useState } from "react";
 import { FACTS, FACTS_TEXT } from "../data/facts";
 import { parseConditions, getCatColor } from "../utils/helpers";
 import { ACTION_TYPES } from "../data/rules";
 import ConditionChip from "../components/ConditionChip";
 
 const EXAMPLES = [
-  "Detect numbers making hundreds of short calls to unique international numbers â€” likely wangiri",
+  "Detect numbers making hundreds of short calls to unique international numbers — likely wangiri",
   "Block SIM boxes using multiple IMEIs from hot cell towers with high call volumes",
   "Find CLI spoofing where home operator doesn't match transit and ATI checks fail",
   "Identify new subscribers making unusually high international calls at night",
@@ -31,44 +31,20 @@ export default function AIDesigner() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "claude-sonnet-4-20250514",
-          max_tokens: 4000,
-          messages: [
-            {
-              role: "user",
-              content: `You are a telecom fraud detection expert helping design real-time firewall rules.
-
-Available FACTS:
-${FACTS_TEXT}
-
-The fraud analyst describes what they want to detect:
-"${desc}"
-
-Respond ONLY with valid JSON (no markdown, no backticks). Structure:
-{
-  "analysis": "Brief explanation (2-3 sentences)",
-  "fraud_type": "Name",
-  "risk_level": "HIGH" | "MEDIUM" | "LOW",
-  "recommended_facts": [{"name":"FACT_NAME","relevance":"Why","priority":"PRIMARY|SECONDARY|SUPPORTING"}],
-  "rule_options": [{"name":"Rule name","description":"What it does","action":"Anumber Blacklist|Release Call|Monitor","aggressiveness":"Conservative|Moderate|Aggressive","conditions_text":"FACT1 > value AND FACT2 = value","notes":"Tuning advice"}],
-  "considerations": ["Deployment notes"],
-  "related_fraud_types": ["Related types"]
-}`,
-            },
-          ],
+          description: desc,
+          factsText: FACTS_TEXT,
         }),
       });
 
       const data = await resp.json();
-      const text = (data.content || []).map((b) => b.text || "").join("");
-      const clean = text
-        .replace(/```json\s*/g, "")
-        .replace(/```\s*/g, "")
-        .trim();
-      const parsed = JSON.parse(clean);
-      setResult(parsed);
+
+      if (!resp.ok) {
+        throw new Error(data.error || "Analysis failed");
+      }
+
+      setResult(data);
       setHistory((prev) => [
-        { desc, result: parsed, time: new Date() },
+        { desc, result: data, time: new Date() },
         ...prev.slice(0, 9),
       ]);
     } catch (e) {
@@ -115,7 +91,7 @@ Respond ONLY with valid JSON (no markdown, no backticks). Structure:
                 fontSize: 15,
               }}
             >
-              âœ¦
+              ✦
             </div>
             <div>
               <div style={{ fontSize: 15, fontWeight: 700, color: "var(--text-primary)" }}>
@@ -159,7 +135,7 @@ Respond ONLY with valid JSON (no markdown, no backticks). Structure:
               gap: 8,
             }}
           >
-            <span style={{ fontSize: 11, color: "var(--text-ghost)" }}>âŒ˜+Enter to submit</span>
+            <span style={{ fontSize: 11, color: "var(--text-ghost)" }}>⌘+Enter to submit</span>
             <button
               onClick={analyze}
               disabled={loading || !desc.trim()}
@@ -177,7 +153,7 @@ Respond ONLY with valid JSON (no markdown, no backticks). Structure:
                 cursor: loading || !desc.trim() ? "default" : "pointer",
               }}
             >
-              {loading ? "âŸ³ Analysing..." : "âœ¦ Analyse & Recommend"}
+              {loading ? "⟳ Analysing..." : "✦ Analyse & Recommend"}
             </button>
           </div>
         </div>
@@ -237,7 +213,7 @@ Respond ONLY with valid JSON (no markdown, no backticks). Structure:
           }}
         >
           <div style={{ fontSize: 28, marginBottom: 12, animation: "spin 1.5s linear infinite" }}>
-            âœ¦
+            ✦
           </div>
           <div style={{ fontSize: 14, color: "var(--text-muted)" }}>
             Analysing fraud pattern and recommending FACTS...
@@ -321,7 +297,7 @@ Respond ONLY with valid JSON (no markdown, no backticks). Structure:
               }}
             >
               <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
-                ðŸ“‹ Recommended FACTS ({(result.recommended_facts || []).length})
+                📋 Recommended FACTS ({(result.recommended_facts || []).length})
               </span>
             </div>
             <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 6 }}>
@@ -329,7 +305,7 @@ Respond ONLY with valid JSON (no markdown, no backticks). Structure:
                 const fact = FACTS.find((f) => f.name === rf.name);
                 const c = fact
                   ? getCatColor(fact.cat)
-                  : { tx: "#596577", bd: "#d8dde4", ic: "â—‰" };
+                  : { tx: "#596577", bd: "#d8dde4", ic: "◉" };
                 const pc = rf.priority === "PRIMARY" ? "#58a6ff" : "#8b949e";
                 return (
                   <div
@@ -380,7 +356,7 @@ Respond ONLY with valid JSON (no markdown, no backticks). Structure:
                               color: `${c.tx}77`,
                             }}
                           >
-                            {fact.type} Â· {c.ic} {fact.cat}
+                            {fact.type} · {c.ic} {fact.cat}
                           </span>
                         )}
                       </div>
@@ -418,7 +394,7 @@ Respond ONLY with valid JSON (no markdown, no backticks). Structure:
               }}
             >
               <span style={{ fontSize: 13, fontWeight: 700, color: "var(--text-primary)" }}>
-                âš™ï¸ Rule Designs
+                ⚙️ Rule Designs
               </span>
             </div>
             <div style={{ padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
@@ -531,7 +507,7 @@ Respond ONLY with valid JSON (no markdown, no backticks). Structure:
                             margin: "10px 0 0",
                           }}
                         >
-                          ðŸ’¡ {ro.notes}
+                          💡 {ro.notes}
                         </p>
                       )}
                     </div>
@@ -559,11 +535,11 @@ Respond ONLY with valid JSON (no markdown, no backticks). Structure:
                   marginBottom: 10,
                 }}
               >
-                âš ï¸ Deployment Considerations
+                ⚠️ Deployment Considerations
               </div>
               {result.considerations.map((c, i) => (
                 <div key={i} style={{ display: "flex", gap: 10, marginBottom: 6 }}>
-                  <span style={{ color: "var(--accent-yellow)", flexShrink: 0 }}>â–¸</span>
+                  <span style={{ color: "var(--accent-yellow)", flexShrink: 0 }}>▸</span>
                   <span style={{ fontSize: 12, color: "var(--text-muted)", lineHeight: 1.5 }}>
                     {c}
                   </span>
@@ -648,7 +624,7 @@ Respond ONLY with valid JSON (no markdown, no backticks). Structure:
                   {h.desc}
                 </div>
                 <div style={{ fontSize: 10, color: "var(--text-ghost)" }}>
-                  {h.result.fraud_type} Â· {h.result.rule_options?.length || 0} rules
+                  {h.result.fraud_type} · {h.result.rule_options?.length || 0} rules
                 </div>
               </div>
               <span style={{ fontSize: 10, color: "var(--text-ghost)", flexShrink: 0 }}>
@@ -661,4 +637,3 @@ Respond ONLY with valid JSON (no markdown, no backticks). Structure:
     </div>
   );
 }
-
